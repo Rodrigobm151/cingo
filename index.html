@@ -39,6 +39,14 @@
             cal.innerHTML += `<div class="flex justify-between py-1"><span>${d.toLocaleDateString('pt-BR',{weekday:'short', day:'numeric'})}</span><input type="checkbox" class="d-check" data-date="${iso}" ${check}></div>`;
         }
 
+        async function carregarStatusAtual() {
+    const resp = await fetch('config.json');
+    const config = await resp.json();
+    
+    document.getElementById('lastSync').innerText = config.ultimo_ponto || "Nenhum registro hoje";
+    document.getElementById('statusToggle').checked = (config.status === "rodando");
+    updateStatusLabel();
+        
         async function save() {
             const token = document.getElementById('ghToken').value;
             const config = {
