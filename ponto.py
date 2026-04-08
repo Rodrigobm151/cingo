@@ -1,75 +1,26 @@
-import requests
-import time
-import random
+import json
 import os
 from datetime import datetime
 
-# Credenciais dos Secrets
-USUARIO = os.getenv('CINGO_USER')
-SENHA = os.getenv('CINGO_PASS')
+def verificar_autorizacao():
+    if not os.path.exists('config.json'):
+        return True # Se não houver config, roda por padrão
 
-# Configurações de Localização (As que você me enviou)
-LATITUDE = -5.80150422131498
-LONGITUDE = -50.515350539205535
+    with open('config.json', 'r') as f:
+        config = json.load(f)
 
-URL_LOGIN = "https://www.cingoportal.com/afry/portal/action/Login/view/normal"
-URL_MARCACAO = "https://www.cingoportal.com/afry/rest/pontoeletronico/marcacaoponto/marcacaoponto/marcacoes"
+    # Verifica Play/Pause
+    if config.get('status') != 'rodando':
+        print("SISTEMA PAUSADO NO PAINEL.")
+        return False
 
-def check_excecoes():
+    # Verifica se hoje está marcado no calendário
     hoje = datetime.now().strftime("%Y-%m-%d")
-    if os.path.exists("excecoes.txt"):
-        with open("excecoes.txt", "r") as f:
-            conteudo = f.read()
-            if hoje in conteudo:
-                return True
-    return False
+    if hoje not in config.get('dias_permitidos', []):
+        print(f"HOJE ({hoje}) ESTÁ DESMARCADO NO CALENDÁRIO.")
+        return False
 
-def executar():
-    if check_excecoes():
-        print(f"Pausa programada: {datetime.now().strftime('%d/%m/%Y')} está nas exceções.")
-        return
+    return True
 
-    # 1. Margem de 5 minutos aleatórios (Seu Ponto 3)
-    espera = random.randint(0, 300)
-    print(f"Variação humana: Aguardando {espera} segundos...")
-    time.sleep(espera)
-
-    session = requests.Session()
-    
-    # 2. Login (Conforme seu cURL)
-    dados_login = {
-        'action': 'login',
-        'user': USUARIO,
-        'pass': SENHA,
-        'domain': '', 'code': '', 'bornDate': ''
-    }
-
-    print("Realizando login...")
-    res_login = session.post(URL_LOGIN, data=dados_login)
-    
-    if res_login.status_code == 200:
-        print("Login OK. Preparando marcação com GPS...")
-        
-        # 3. Payload de Marcação com a Geolocalização (Seu Ponto 1)
-        # Enviamos os dados que o servidor espera para validar sua posição
-        payload_ponto = {
-            "latitude": LATITUDE,
-            "longitude": LONGITUDE,
-            "accuracy": random.uniform(10.0, 30.0), # Precisão variável para parecer real
-            "isMockLocation": False # Diz ao sistema que não é localização falsa
-        }
-
-        # Tentativa de registro
-        res_ponto = session.post(URL_MARCACAO, json=payload_ponto)
-        
-        if res_ponto.status_code == 200:
-            print(f"SUCESSO! Ponto registrado em: {LATITUDE}, {LONGITUDE}")
-        else:
-            # Se o POST falhar, tentamos o GET simples como backup
-            session.get(URL_MARCACAO)
-            print("Ponto enviado via método alternativo.")
-    else:
-        print("Erro ao acessar o portal.")
-
-if __name__ == "__main__":
-    executar()
+# No seu def executar():
+# if not verificar_autorizacao(): return
