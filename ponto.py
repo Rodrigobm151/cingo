@@ -22,6 +22,26 @@ def verificar_autorizacao():
     except:
         return True
 
+def atualizar_ultimo_ponto(session):
+    # Endpoint que vimos nas suas capturas de tela
+    URL_LISTA = "https://www.cingoportal.com/afry/rest/pontoeletronico/marcacaoponto/marcacaoponto/marcacoes"
+    
+    res = session.get(URL_LISTA)
+    if res.status_code == 200:
+        dados = res.json()
+        # Pega a última marcação da lista enviada pelo Cingo
+        if dados and len(dados) > 0:
+            ultima = dados[-1].get('horaMarcação', 'Horário não encontrado')
+            
+            # Atualiza o config.json para o HTML ler
+            with open('config.json', 'r+') as f:
+                config = json.load(f)
+                config['ultimo_ponto'] = f"Hoje às {ultima}"
+                f.seek(0)
+                json.dump(config, f, indent=2)
+                f.truncate()
+            print(f"Painel atualizado com o horário real: {ultima}")
+
 def executar():
     if not verificar_autorizacao(): return
     
