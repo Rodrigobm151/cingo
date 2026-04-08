@@ -1,32 +1,21 @@
 name: Ponto Cingo
 on:
   schedule:
+    # 10:55 UTC = 07:55 Brasil (Prepara para as 08h)
     - cron: '55 10 * * 1-5'
+    # 19:55 UTC = 16:55 Brasil (Prepara para as 17h)
     - cron: '55 19 * * 1-5'
-  workflow_dispatch:
+  workflow_dispatch: # Permite que você rode manualmente para testar
 
 jobs:
-  run:
+  bater_ponto:
     runs-on: ubuntu-latest
-    # ESSA LINHA É CRUCIAL PARA O ROBÔ CONSEGUIR ESCREVER O HORÁRIO NO JSON
-    permissions:
-      contents: write
-      
     steps:
       - uses: actions/checkout@v3
-      - name: Executar Robô
+      - name: Executar Script
         env:
           CINGO_USER: ${{ secrets.CINGO_USER }}
           CINGO_PASS: ${{ secrets.CINGO_PASS }}
         run: |
           pip install requests
           python ponto.py
-          
-      # COMANDO PARA SALVAR A ATUALIZAÇÃO DO HORÁRIO NO GITHUB
-      - name: Commit do Horário
-        run: |
-          git config --global user.name "CingoBot"
-          git config --global user.email "bot@github.com"
-          git add config.json
-          git commit -m "Atualizado: Último ponto registrado" || exit 0
-          git push
