@@ -1,18 +1,15 @@
-name: Automação Ponto
+name: Ponto Cingo
 on:
   schedule:
-    # 07:55 BRT (10:55 UTC) e 16:55 BRT (19:55 UTC)
-    # Rodamos 5 min antes por causa do random
-    - cron: '55 10 * * 1-5'
-    - cron: '55 19 * * 1-5'
-  workflow_dispatch: # Permite rodar o botão "Run workflow" para testar agora
-
+    - cron: '55 10 * * 1-5' # 07:55 AM Brasil
+    - cron: '55 19 * * 1-5' # 04:55 PM Brasil
+  workflow_dispatch:
 jobs:
-  bater-ponto:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Executar Script
+      - name: Start
         env:
           CINGO_USER: ${{ secrets.CINGO_USER }}
           CINGO_PASS: ${{ secrets.CINGO_PASS }}
