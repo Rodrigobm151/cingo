@@ -1,0 +1,18 @@
+name: Ponto Cingo
+on:
+  schedule:
+    - cron: '55 10 * * 1-5' # 07:55 AM (Brasília)
+    - cron: '55 19 * * 1-5' # 16:55 PM (Brasília)
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Rodar Ponto
+        env:
+          CINGO_USER: ${{ secrets.CINGO_USER }}
+          CINGO_PASS: ${{ secrets.CINGO_PASS }}
+        run: |
+          pip install requests
+          python ponto.py
